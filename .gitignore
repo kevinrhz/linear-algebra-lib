@@ -1,0 +1,26 @@
+# Build artifacts
+cmake-build-*/
+build/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+*.o
+*.obj
+*.so
+*.dll
+*.a
+*.lib
+*.exe
+
+# CLion project files
+.idea/
+*.iml
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Optional: logs, crash reports
+*.log
+*.core
