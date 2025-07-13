@@ -28,22 +28,24 @@ const T& Matrix<T>::operator()(std::size_t i, std::size_t j) const {
 }
 
 template<typename T>
-Matrix<T> Matrix<T>::operator*(const Matrix<T> &other) const {
-    if (cols_ != other.rows_)
+Matrix<T> Matrix<T>::operator*(const Matrix<T> &B) const {
+    const Matrix<T>& A = *this;
+    if (A.numCols() != B.numRows())
         throw std::invalid_argument("Matrix dimensions mismatch for multiplication");
 
-    Matrix<T> result(rows_, other.cols_);
-    for (std::size_t i = 0; i < rows_; ++i) {
-        for (std::size_t j = 0; j < other.cols_; ++j) {
+    Matrix<T> result(A.numRows(), B.numCols());
+    for (std::size_t i = 0; i < A.numRows(); ++i) {
+        for (std::size_t j = 0; j < B.numCols(); ++j) {
             T sum = T();
-            for (std::size_t k = 0; k < cols_; ++k) {
-                sum += operator()(i, k) * other(k, j);
+            for (std::size_t k = 0; k < A.numCols(); ++k) {
+                sum += A(i, k) * B(k, j);
             }
             result(i, j) = sum;
         }
     }
     return result;
 }
+
 
 template<typename T>
 void Matrix<T>::print() const {
