@@ -28,6 +28,34 @@ const T& Matrix<T>::operator()(std::size_t i, std::size_t j) const {
 }
 
 template<typename T>
+Matrix<T> Matrix<T>::operator+(const Matrix<T>& other) const {
+    if (!isSameSize(other))
+        throw std::invalid_argument("Matrix addition size mismatch");
+
+    Matrix<T> result(rows_, cols_);
+    for (std::size_t i = 0; i < rows_; ++i) {
+        for (std::size_t j = 0; j < cols_; ++j) {
+            result(i, j) = operator()(i, j) + other(i, j);
+        }
+    }
+    return result;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::operator-(const Matrix<T>& other) const {
+    if (!isSameSize(other))
+        throw std::invalid_argument("Matrix subtraction size mismatch");
+
+    Matrix<T> result(rows_, cols_);
+    for (std::size_t i = 0; i < rows_; ++i) {
+        for (std::size_t j = 0; j < cols_; ++j) {
+            result(i, j) = operator()(i, j) - other(i, j);
+        }
+    }
+    return result;
+}
+
+template<typename T>
 Matrix<T> Matrix<T>::operator*(const Matrix<T> &B) const {
     const Matrix<T>& A = *this;
     if (A.numCols() != B.numRows())
@@ -46,6 +74,77 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &B) const {
     return result;
 }
 
+template<typename T>
+Matrix<T> Matrix<T>::transpose() const {
+    Matrix<T> result(cols_, rows_);  // swap rows and cols
+
+    for (std::size_t i = 0; i < rows_; ++i) {
+        for (std::size_t j = 0; j < cols_; ++j) {
+            result(j, i) = operator()(i, j);
+        }
+    }
+
+    return result;
+}
+
+
+template<typename T>
+Matrix<T> Matrix<T>::identity(std::size_t n) {
+    Matrix<T> I(n, n);
+    for (std::size_t i = 0; i < n; ++i)
+        I(i, i) = T(1);
+    return I;
+}
+
+template<typename T>
+void Matrix<T>::rowSwap(std::size_t i, std::size_t j) {
+    if (i >= rows_ || j >= rows_)
+        throw std::out_of_range("swapRows: row index out of range");
+    for (std::size_t col = 0; col < cols_; ++col)
+        std::swap(operator()(i, col), operator()(j, col));
+}
+
+template<typename T>
+void Matrix<T>::rowScale(std::size_t row, T factor) {
+    if (row >= rows_)
+        throw std::out_of_range("scaleRow: row index out of range");
+    for (std::size_t col = 0; col < cols_; ++col)
+        operator()(row, col) *= factor;
+}
+
+template<typename T>
+void Matrix<T>::rowAdd(std::size_t srcRow, std::size_t destRow, T factor) {
+    if (srcRow >= rows_ || destRow >= rows_)
+        throw std::out_of_range("addRow: row index out of range");
+    for (std::size_t col = 0; col < cols_; ++col)
+        operator()(destRow, col) += operator()(srcRow, col) * factor;
+}
+
+
+template<typename T>
+Matrix<T> Matrix<T>::makeRowSwapMatrix(std::size_t n, std::size_t i, std::size_t j) {
+    Matrix<T> E = identity(n);
+    std::swap(E(i, i), E(j, j));
+    E(i, j) = T(1);
+    E(j, i) = T(1);
+    E(i, i) = T(0);
+    E(j, j) = T(0);
+    return E;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::makeRowScaleMatrix(std::size_t n, std::size_t row, T scalar) {
+    Matrix<T> E = identity(n);
+    E(row, row) = scalar;
+    return E;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::makeRowAddMatrix(std::size_t n, std::size_t srcRow, std::size_t destRow, T factor) {
+    Matrix<T> E = identity(n);
+    E(destRow, srcRow) = factor;
+    return E;
+}
 
 template<typename T>
 void Matrix<T>::print() const {
@@ -60,60 +159,6 @@ void Matrix<T>::print() const {
 }
 
 template<typename T>
-Matrix<T> Matrix<T>::identity(std::size_t n) {
-    Matrix<T> I(n, n);
-    for (std::size_t i = 0; i < n; ++i)
-        I(i, i) = T(1);
-    return I;
+bool Matrix<T>::isSameSize(const Matrix<T>& other) const {
+    return (rows_ == other.rows_) && (cols_ == other.cols_);
 }
-
-template<typename T>
-void Matrix<T>::swapRows(std::size_t i, std::size_t j) {
-    if (i >= rows_ || j >= rows_)
-        throw std::out_of_range("swapRows: row index out of range");
-    for (std::size_t col = 0; col < cols_; ++col)
-        std::swap(operator()(i, col), operator()(j, col));
-}
-
-template<typename T>
-void Matrix<T>::scaleRow(std::size_t row, T factor) {
-    if (row >= rows_)
-        throw std::out_of_range("scaleRow: row index out of range");
-    for (std::size_t col = 0; col < cols_; ++col)
-        operator()(row, col) *= factor;
-}
-
-template<typename T>
-void Matrix<T>::addRow(std::size_t srcRow, std::size_t destRow, T factor) {
-    if (srcRow >= rows_ || destRow >= rows_)
-        throw std::out_of_range("addRow: row index out of range");
-    for (std::size_t col = 0; col < cols_; ++col)
-        operator()(destRow, col) += operator()(srcRow, col) * factor;
-}
-
-
-template<typename T>
-Matrix<T> Matrix<T>::rowSwapMatrix(std::size_t n, std::size_t i, std::size_t j) {
-    Matrix<T> E = identity(n);
-    std::swap(E(i, i), E(j, j));
-    E(i, j) = T(1);
-    E(j, i) = T(1);
-    E(i, i) = T(0);
-    E(j, j) = T(0);
-    return E;
-}
-
-template<typename T>
-Matrix<T> Matrix<T>::rowScaleMatrix(std::size_t n, std::size_t row, T scalar) {
-    Matrix<T> E = identity(n);
-    E(row, row) = scalar;
-    return E;
-}
-
-template<typename T>
-Matrix<T> Matrix<T>::rowAddMatrix(std::size_t n, std::size_t srcRow, std::size_t destRow, T factor) {
-    Matrix<T> E = identity(n);
-    E(destRow, srcRow) = factor;
-    return E;
-}
-

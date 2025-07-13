@@ -15,7 +15,12 @@
  */
 template<typename T>
 class Matrix {
+private:
+    std::size_t rows_, cols_;   ///< Dimensions
+    std::vector<T> data_;       ///< Row-major data storage
+
 public:
+    // --- Constructors ---
     /**
      * @brief Construct a rows × cols matrix, initialized to zero.
      *
@@ -24,6 +29,7 @@ public:
      */
     Matrix(std::size_t rows, std::size_t cols);
 
+    // --- Element Access ---
     /**
      * @brief Number of rows in the matrix.
      * @return rows count
@@ -58,6 +64,10 @@ public:
      */
     const T& operator()(std::size_t i, std::size_t j) const;
 
+    // --- Basic Matrix Operations ---
+    Matrix<T> operator+(const Matrix<T>& other) const;
+    Matrix<T> operator-(const Matrix<T>& other) const;
+
     /**
      * @brief Multiply two matrices (this * other).
      *
@@ -68,7 +78,7 @@ public:
     Matrix<T> operator*(const Matrix<T> &other) const;
 
 
-    // ────── Elementary / Factory Matrices ──────
+    Matrix<T> transpose() const;
 
     /**
      * @brief Create an n×n identity matrix.
@@ -80,11 +90,23 @@ public:
      */
     static Matrix<T> identity(std::size_t n);
 
+    // --- In-Place Row Operations ---
     /**
      * @brief Swap two rows of this matrix in place.
      */
-    void swapRows(std::size_t i, std::size_t j);
+    void rowSwap(std::size_t i, std::size_t j);
 
+    /**
+     * @brief Multiply a row by a scalar in place.
+     */
+    void rowScale(std::size_t row, T factor);
+
+    /**
+     * @brief Add factor × srcRow into destRow in place.
+     */
+    void rowAdd(std::size_t srcRow, std::size_t destRow, T factor);
+
+    // --- Elementary Matrix Generators ---
     /**
      * @brief Elementary matrix that swaps rows i and j when left-multiplied.
      *
@@ -93,12 +115,7 @@ public:
      * @param j    Second row to swap
      * @return Row-swap matrix
      */
-    static Matrix<T> rowSwapMatrix(std::size_t n, std::size_t i, std::size_t j);
-
-    /**
-     * @brief Multiply a row by a scalar in place.
-     */
-    void scaleRow(std::size_t row, T factor);
+    static Matrix<T> makeRowSwapMatrix(std::size_t n, std::size_t i, std::size_t j);
 
     /**
      * @brief Elementary matrix that scales a single row by a factor when left-multiplied.
@@ -108,12 +125,7 @@ public:
      * @param scalar Multiplicative factor for the row
      * @return Row-scale matrix
      */
-    static Matrix<T> rowScaleMatrix(std::size_t n, std::size_t row, T scalar);
-
-    /**
-     * @brief Add factor × srcRow into destRow in place.
-     */
-    void addRow(std::size_t srcRow, std::size_t destRow, T factor);
+    static Matrix<T> makeRowScaleMatrix(std::size_t n, std::size_t row, T scalar);
 
     /**
      * @brief Elementary matrix that adds (factor × srcRow) to destRow when left-multiplied.
@@ -124,10 +136,9 @@ public:
      * @param factor   Multiplier for source row
      * @return Row-addition matrix
      */
-    static Matrix<T> rowAddMatrix(std::size_t n, std::size_t srcRow, std::size_t destRow, T factor);
+    static Matrix<T> makeRowAddMatrix(std::size_t n, std::size_t srcRow, std::size_t destRow, T factor);
 
-    // ────── Utility ──────
-
+    // --- Utility ---
     /**
      * @brief Print the matrix to stdout in a lined-up, readable format.
      *
@@ -135,9 +146,13 @@ public:
      */
     void print() const;
 
-private:
-    std::size_t rows_, cols_;   ///< Dimensions
-    std::vector<T> data_;       ///< Row-major data storage
+    /**
+     * @brief Check if this matrix has the same dimensions as another.
+     *
+     * @param other Matrix to compare with.
+     * @return true if dimensions match, false otherwise.
+     */
+    bool isSameSize(const Matrix<T>& other) const;
 };
 
 #include "../src/Matrix.tpp"

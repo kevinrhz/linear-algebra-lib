@@ -9,7 +9,7 @@ int main() {
 
     std::cout<<"Original A:\n"; A.print();
 
-    A.swapRows(0,2);
+    A.rowSwap(0,2);
     std::cout<<"\nAfter swapRows(0,2):\n"; A.print();
 
     A = Matrix<double>::identity(3);
@@ -18,13 +18,13 @@ int main() {
     A(1,2) = 4;
     std::cout<<"\nReset + modify row1:\n"; A.print();
 
-    A.scaleRow(1, 5);
+    A.rowScale(1, 5);
     std::cout<<"\nAfter scaleRow(1,5):\n"; A.print();
 
     A = Matrix<double>::identity(3);
     std::cout<<"\nReset to I_3:\n"; A.print();
 
-    A.addRow(0, 2, 3.0);
+    A.rowAdd(0, 2, 3.0);
     std::cout<<"\nAfter addRow(0->2,x3):\n"; A.print();
 
     return 0;
